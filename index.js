@@ -3,12 +3,13 @@ const helmet = require("helmet");
 const cors = require("cors");
 const cookieparser = require("cookie-parser");
 const mongoose = require("mongoose");
+const authRouter = require("./routers/authRouter");
 
 const app = express();
 
 app.use(cors());
-app.use(helmet);
-app.use(cookieparser);
+app.use(helmet());
+app.use(cookieparser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 mongoose
@@ -19,6 +20,8 @@ mongoose
   .catch((error) => {
     console.log("Error:", error);
   });
+
+app.use("/api/auth", authRouter);
 
 app.get("/", (req, res) => {
   res.json({ meesage: "Hello from server" });
