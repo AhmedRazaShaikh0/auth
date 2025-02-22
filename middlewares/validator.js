@@ -42,3 +42,8 @@ exports.verifyUserVerificationSchema = Joi.object({
     }),
   verificationCode: Joi.number().required(),
 });
+
+exports.changePasswordSchema = Joi.object({
+  oldPassword: Joi.string().required().pattern(new RegExp("^[a-zA-Z0-9]{3,30}$")),
+  newPassword: Joi.string().required().pattern(new RegExp("^[a-zA-Z0-9]{3,30}$")),
+});

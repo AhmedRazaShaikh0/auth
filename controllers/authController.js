@@ -5,6 +5,7 @@ const {
   loginSchema,
   verifySchema, 
   verifyUserVerificationSchema,
+  changePasswordSchema,
 } = require("../middlewares/validator");
 const { comparePassword, hmacProcess } = require("../utils/hashing");
 const jwt = require("jsonwebtoken");
@@ -161,3 +162,32 @@ exports.verifyUserVerification = async (req, res) => {
     console.log(error);
   }
 };
+
+exports.changePassword = async (req, res) => {
+  const { id, verified } = req.user;
+  const { oldPassword, newPassword } = req.body;
+  try {
+    const { error, value } = changePasswordSchema.validate({ oldPassword, newPassword });
+    if(error) {
+      return res.status(401).json({ message: error.details[0].message });
+    }
+    if(!verified) {
+      return res.status(401).json({ message: "User not verified" });
+    }
+    const user = await User.findOne({ _id: id }).select("+password");
+    if(!user) {
+      return res.status(401).json({ message: "User not found" });
+    }
+    const result = await comparePassword(oldPassword, user.password);
+    if(!result) {
+      return res.status(401).json({ message: "Incorrect old password" });
+    }
+    const hashedPassword = await hashPassword(newPassword, 10);
+    user.password = hashedPassword;
+    await user.save();
+    res.status(200).json({ message: "Password changed successfully" });
+    
+  } catch (error) {
+    console.log(error);
+  }
+}
